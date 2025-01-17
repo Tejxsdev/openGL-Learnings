@@ -22,7 +22,7 @@ unsigned int loadTexture(char const *path);
 void processInput(GLFWwindow *window);
 void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 
-glm::vec3 lightPos(-0.5f, 1.0f, 1.5f);
+glm::vec3 lightPos(-2.5f, 1.0f, 1.5f);
 
 // Camera Setup
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 10.0f);
@@ -44,6 +44,7 @@ int main()
   // shaders
   shader ourShader("../shaders/color.vert", "../shaders/color.frag");
   shader lightShader("../shaders/light.vert", "../shaders/light.frag");
+  shader debugShader("../shaders/debug.vert", "../shaders/debug.frag");
   shader planeShader("../shaders/color.vert", "../shaders/color.frag");
 
   glEnable(GL_DEPTH_TEST);
@@ -56,7 +57,6 @@ int main()
 
   cout << count << endl;
   const int nV = count * 3;
-
 
   vector<float> verticesB;
   vector<int> indexB;
@@ -118,6 +118,7 @@ int main()
   {
     collider = body->addCollider(mesh, transformC);
   }
+
   // Create a rigidbody for ground
   Vector3 positionG(0, -3, 0);
   Quaternion orientationG = Quaternion::identity();
@@ -134,11 +135,11 @@ int main()
   colliderG = groundBody->addCollider(boxG, transformGC);
   const decimal timeStep = 1.0f / 60.0f;
 
-  body->setIsDebugEnabled(true);
-  groundBody->setIsDebugEnabled(true);
+  body->setIsDebugEnabled(false);
+  groundBody->setIsDebugEnabled(false);
 
   DebugRenderer &debugRenderer = world->getDebugRenderer();
-  
+
   // Select the contact points and contact normals to be displayed
   debugRenderer.setIsDebugItemDisplayed(DebugRenderer::DebugItem::CONTACT_POINT,
                                         true);
@@ -159,48 +160,71 @@ int main()
 
   // Lighting
   float vertices[] = {
-      -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.5f, -0.5f, -0.5f,
-      0.0f, 0.0f, -1.0f, 0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
-      0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, -0.5f, 0.5f, -0.5f,
-      0.0f, 0.0f, -1.0f, -0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,
+      -1.0f, -1.0f, -1.0f,
+      -1.0f, -1.0f, 1.0f,
+      -1.0f, 1.0f, 1.0f,
+      1.0f, 1.0f, -1.0f,
+      -1.0f, -1.0f, -1.0f,
+      -1.0f, 1.0f, -1.0f,
+      1.0f, -1.0f, 1.0f,
+      -1.0f, -1.0f, -1.0f,
+      1.0f, -1.0f, -1.0f,
+      1.0f, 1.0f, -1.0f,
+      1.0f, -1.0f, -1.0f,
+      -1.0f, -1.0f, -1.0f,
+      -1.0f, -1.0f, -1.0f,
+      -1.0f, 1.0f, 1.0f,
+      -1.0f, 1.0f, -1.0f,
+      1.0f, -1.0f, 1.0f,
+      -1.0f, -1.0f, 1.0f,
+      -1.0f, -1.0f, -1.0f,
+      -1.0f, 1.0f, 1.0f,
+      -1.0f, -1.0f, 1.0f,
+      1.0f, -1.0f, 1.0f,
+      1.0f, 1.0f, 1.0f,
+      1.0f, -1.0f, -1.0f,
+      1.0f, 1.0f, -1.0f,
+      1.0f, -1.0f, -1.0f,
+      1.0f, 1.0f, 1.0f,
+      1.0f, -1.0f, 1.0f,
+      1.0f, 1.0f, 1.0f,
+      1.0f, 1.0f, -1.0f,
+      -1.0f, 1.0f, -1.0f,
+      1.0f, 1.0f, 1.0f,
+      -1.0f, 1.0f, -1.0f,
+      -1.0f, 1.0f, 1.0f,
+      1.0f, 1.0f, 1.0f,
+      -1.0f, 1.0f, 1.0f,
+      1.0f, -1.0f, 1.0f};
 
-      -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.5f, -0.5f, 0.5f,
-      0.0f, 0.0f, 1.0f, 0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
-      0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, -0.5f, 0.5f, 0.5f,
-      0.0f, 0.0f, 1.0f, -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,
+  unsigned int lightVAO, lightVBO;
 
-      -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f, -0.5f, 0.5f, -0.5f,
-      -1.0f, 0.0f, 0.0f, -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f,
-      -0.5f, -0.5f, -0.5f, -1.0f, 0.0f, 0.0f, -0.5f, -0.5f, 0.5f,
-      -1.0f, 0.0f, 0.0f, -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f,
+  glGenVertexArrays(1, &lightVAO);
+  glGenBuffers(1, &lightVBO);
 
-      0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.5f, 0.5f, -0.5f,
-      1.0f, 0.0f, 0.0f, 0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,
-      0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.5f, -0.5f, 0.5f,
-      1.0f, 0.0f, 0.0f, 0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f,
+  glBindVertexArray(lightVAO);
+  glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices),
+               vertices, GL_STATIC_DRAW);
 
-      -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 0.5f, -0.5f, -0.5f,
-      0.0f, -1.0f, 0.0f, 0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f,
-      0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, -0.5f, -0.5f, 0.5f,
-      0.0f, -1.0f, 0.0f, -0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f,
-
-      -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.5f, 0.5f, -0.5f,
-      0.0f, 1.0f, 0.0f, 0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f,
-      0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, -0.5f, 0.5f, 0.5f,
-      0.0f, 1.0f, 0.0f, -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f};
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
+                        (void *)0); // Position
+  glEnableVertexAttribArray(0);
 
   // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
   glfwSetInputMode(win->window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
   glfwSetCursorPosCallback(win->window, mouse_callback);
 
-  unsigned int lightVAO, VBO;
+  unsigned int DebugVAO, DebugVBO;
   while (!glfwWindowShouldClose(win->window))
   {
     float currentFrame = glfwGetTime();
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
     float timeValue = (float)glfwGetTime();
+
+    lightPos.y = sin(currentFrame);
 
     world->update(timeStep);
 
@@ -219,8 +243,8 @@ int main()
                          (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
     view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
     view = glm::rotate(view, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    //Transform Ptransform(pos, player.orientation);
-    //player.body->setTransform(Ptransform);
+    // Transform Ptransform(pos, player.orientation);
+    // player.body->setTransform(Ptransform);
 
     angle = 2.0f * acos(body->getTransform().getOrientation().w);
 
@@ -289,11 +313,11 @@ int main()
       vertexArr.push_back(points.point3.z);
     }
 
-    glGenVertexArrays(1, &lightVAO);
-    glGenBuffers(1, &VBO);
+    glGenVertexArrays(1, &DebugVAO);
+    glGenBuffers(1, &DebugVBO);
 
-    glBindVertexArray(lightVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindVertexArray(DebugVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, DebugVBO);
     glBufferData(GL_ARRAY_BUFFER, vertexArr.size() * sizeof(float),
                  vertexArr.data(), GL_STATIC_DRAW);
 
@@ -301,16 +325,12 @@ int main()
                           (void *)0); // Position
     glEnableVertexAttribArray(0);
 
-    lightShader.use();
-    glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "projection"), 1,
+    debugShader.use();
+    glUniformMatrix4fv(glGetUniformLocation(debugShader.ID, "projection"), 1,
                        GL_FALSE, &projection[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "view"), 1,
+    glUniformMatrix4fv(glGetUniformLocation(debugShader.ID, "view"), 1,
                        GL_FALSE, &view[0][0]);
     model = glm::mat4(1.0f);
-    // model = glm::translate(model,
-    // glm::vec3(body->getTransform().getPosition().x,
-    // body->getTransform().getPosition().y-10,
-    // body->getTransform().getPosition().z));
     model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));
     model = glm::rotate(
         model, glm::radians(0.0f),
@@ -318,10 +338,28 @@ int main()
                   0.0000000000001f +
                       body->getTransform().getOrientation().getVectorV().y,
                   body->getTransform().getOrientation().getVectorV().z));
+    glUniformMatrix4fv(glGetUniformLocation(debugShader.ID, "model"), 1,
+                       GL_FALSE, &model[0][0]);
+    glBindVertexArray(DebugVAO);
+    glDrawArrays(GL_LINES, 0, vertexArr.size());
+
+    // Lights
+    lightShader.use();
+    glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "projection"), 1,
+                       GL_FALSE, &projection[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "view"), 1,
+                       GL_FALSE, &view[0][0]);
+    model = glm::mat4(1.0f);
+    model = glm::translate(
+        model, lightPos);
+    model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+    model = glm::rotate(
+        model, glm::radians(0.0f),
+        glm::vec3(0, 1, 0));
     glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "model"), 1,
                        GL_FALSE, &model[0][0]);
     glBindVertexArray(lightVAO);
-    glDrawArrays(GL_LINES, 0, vertexArr.size());
+    glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices));
 
     // glDrawElements(GL_TRIANGLES, 80, GL_UNSIGNED_INT, 0);
 

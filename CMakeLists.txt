@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.8)
 project(openGL, VERSION 0.0.1)
-
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 file(GLOB source_files CONFIGURE_DEPENDS
 "${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/Renderer/*.h"
