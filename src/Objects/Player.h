@@ -22,8 +22,8 @@ public:
     Quaternion orientation;
     ObjectTransform PlayerTransform;
     RigidBody *body;
-    float capsuleRadius = 5.0f;
-    float capsuleHeight = 5.0f;
+    float capsuleRadius = 1.0f;
+    float capsuleHeight = 2.0f;
 
     Player(PhysicsWorld *world, PhysicsCommon *physicsCommon);
     void debugEnabled(bool debug);
@@ -42,11 +42,20 @@ Player::Player(PhysicsWorld *world, PhysicsCommon *physicsCommon)
 
     body = world->createRigidBody(transform);
     // body->setType(BodyType::STATIC);
-    PlayerTransform.Rotation.x = 90;
+
     CapsuleShape *capsuleShape = physicsCommon->createCapsuleShape(capsuleRadius, capsuleHeight);
     
     Collider *collider;
     collider = body->addCollider(capsuleShape, coliderTransform);
+
+    rp3d::Transform transform = body->getTransform();
+    rp3d::Quaternion q = rp3d::Quaternion::fromEulerAngles(0, rp3d::decimal(M_PI_2)*2, 0);
+    transform.setOrientation(q);
+    body->setTransform(transform);
+
+    collider->getMaterial().setBounciness(0);
+    collider->getMaterial().setFrictionCoefficient(0.75);
+    body->setAngularLockAxisFactor(Vector3(0,0,0));
 }
 
 void Player::debugEnabled(bool debug) {

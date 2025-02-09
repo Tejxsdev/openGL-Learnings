@@ -12,6 +12,7 @@
 #include "../../src/Engine/Renderer/model.h"
 #include "../../src/Engine/Renderer/Window.h"
 #include "../../src/Objects/Player.h"
+#include "../../src/Engine/Physics/ContactListener.h"
 
 using namespace reactphysics3d;
 
@@ -36,6 +37,13 @@ float lastFrame = 0.0f; // Time of last frame
 
 PhysicsCommon physicsCommon;
 PhysicsWorld *world = physicsCommon.createPhysicsWorld();
+ContactListener contactListener; 
+
+Player player(world, &physicsCommon);
+Vector3 positionG(0, -3, 0);
+Quaternion orientationG = Quaternion::identity();
+Transform transformG(positionG, orientationG);
+RigidBody *groundBody = world->createRigidBody(transformG);
 
 int main()
 {
@@ -49,8 +57,8 @@ int main()
 
   glEnable(GL_DEPTH_TEST);
   // Model
-  // Model ourModel("/home/roof/Downloads/old-sofa/textures/terrain.obj");
-  Model ourModel("../resources/backpack/backpack.obj");
+  // Model ourModel("/home/roof/Downloads/bmx/source/BMX2_0/bmx/BMX2.0.obj");
+  Model ourModel("../resources/sofa/source/ready.obj");
 
   int count = 0;
   int iCount = 0;
@@ -64,6 +72,8 @@ int main()
   Vector3 scaling(1.0, 1.0, 1.0);
   Transform transformC = Transform::identity();
   vector<ConcaveMeshShape *> ListOfConcaveMeshShape;
+
+  world->setEventListener(&contactListener);
 
   for (int k = 0; k < ourModel.meshes.size(); k++)
   {
@@ -120,10 +130,6 @@ int main()
   }
 
   // Create a rigidbody for ground
-  Vector3 positionG(0, -3, 0);
-  Quaternion orientationG = Quaternion::identity();
-  Transform transformG(positionG, orientationG);
-  RigidBody *groundBody = world->createRigidBody(transformG);
   groundBody->setType(BodyType::STATIC);
   Vector3 halfExtentsG(50.0, 1, 50.0);
   BoxShape *boxG = physicsCommon.createBoxShape(halfExtentsG);
@@ -135,8 +141,9 @@ int main()
   colliderG = groundBody->addCollider(boxG, transformGC);
   const decimal timeStep = 1.0f / 60.0f;
 
-  body->setIsDebugEnabled(false);
-  groundBody->setIsDebugEnabled(false);
+  body->setIsDebugEnabled(true);
+  groundBody->setIsDebugEnabled(true);
+  player.debugEnabled(true);
 
   DebugRenderer &debugRenderer = world->getDebugRenderer();
 
@@ -219,6 +226,11 @@ int main()
   unsigned int DebugVAO, DebugVBO;
   while (!glfwWindowShouldClose(win->window))
   {
+    rp3d::Transform pTransform = player.body->getTransform();
+    cameraPos.x = -pTransform.getPosition().x; 
+    cameraPos.y = -pTransform.getPosition().y; 
+    cameraPos.z = pTransform.getPosition().z; 
+
     float currentFrame = glfwGetTime();
     deltaTime = currentFrame - lastFrame;
     lastFrame = currentFrame;
@@ -372,6 +384,7 @@ int main()
   return 0;
 }
 
+
 void processInput(GLFWwindow *window)
 {
   float moveSpeed = 5.0f * deltaTime;
@@ -379,21 +392,35 @@ void processInput(GLFWwindow *window)
   {
     glfwSetWindowShouldClose(window, true);
   }
+  if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+  {
+    if (world->testOverlap(player.body , groundBody))
+    {
+      std::cout << "AABB Overlap detected!" << std::endl;
+      player.body->applyLocalForceAtCenterOfMass(Vector3(0,800,0));
+    }
+    
+  }
   if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
   {
-    cameraPos += cameraFront * moveSpeed;
+    // cameraPos += cameraFront * moveSpeed;
+    player.body->applyLocalForceAtCenterOfMass(Vector3(cameraFront.x*10.0,0,cameraFront.z*-10));
   }
   if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
   {
-    cameraPos -= cameraFront * moveSpeed;
+    // cameraPos -= cameraFront * moveSpeed;
+    player.body->applyLocalForceAtCenterOfMass(Vector3(cameraFront.x*-10,0,cameraFront.z*10));
   }
   if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
   {
-    cameraPos -= glm::normalize(glm::cross(cameraUp, cameraFront)) * moveSpeed;
+    // cameraPos -= glm::normalize(glm::cross(cameraUp, cameraFront)) * moveSpeed;
+    player.body->applyLocalForceAtCenterOfMass(Vector3(glm::normalize(glm::cross(cameraUp, cameraFront)).x*-10,0,glm::normalize(glm::cross(cameraUp, cameraFront)).z*10));
+
   }
   if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
   {
-    cameraPos += glm::normalize(glm::cross(cameraUp, cameraFront)) * moveSpeed;
+    // cameraPos += glm::normalize(glm::cross(cameraUp, cameraFront)) * moveSpeed;
+    player.body->applyLocalForceAtCenterOfMass(Vector3(glm::normalize(glm::cross(cameraUp, cameraFront)).x*10,0,glm::normalize(glm::cross(cameraUp, cameraFront)).z*-10));
   }
 }
 
