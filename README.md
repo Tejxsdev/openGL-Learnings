@@ -6,6 +6,7 @@ Features:
 
 Working: 
   - Player Controller
+  - GameObject System
   
 Todo:
   - Lights and shaders

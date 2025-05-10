@@ -13,6 +13,7 @@
 #include "../../src/Engine/Renderer/Window.h"
 #include "../../src/Objects/Player.h"
 #include "../../src/Engine/Physics/ContactListener.h"
+#include "../../src/Objects/GameObjects.h"
 
 using namespace reactphysics3d;
 
@@ -32,7 +33,7 @@ glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 // backpack pos
 glm::vec3 backPackPos = glm::vec3(0.0f, 0.0f, 0.0f);
 
-float deltaTime = 0.0f; // Time between current frame and last frame
+float deltaTime = 0.0f; // Time between current frame and lst frame
 float lastFrame = 0.0f; // Time of last frame
 
 PhysicsCommon physicsCommon;
@@ -56,10 +57,9 @@ int main()
   shader planeShader("../shaders/color.vert", "../shaders/color.frag");
 
   glEnable(GL_DEPTH_TEST);
-  // Model
-  // Model ourModel("/home/roof/Downloads/bmx/source/BMX2_0/bmx/BMX2.0.obj");
-  Model ourModel("../resources/sofa/source/ready.obj");
 
+  Model ourModel("../resources/backpack/backpack.obj");
+  GameObjects sofa(world);
   int count = 0;
   int iCount = 0;
 
@@ -117,10 +117,14 @@ int main()
 
   world->setIsDebugRenderingEnabled(true);
 
+  sofa.addRigidBody();
+  sofa.rb.addConcaveCollider(sofa.mesh, physicsCommon);
+
   Vector3 position(0, 0, 0);
   Quaternion orientation = Quaternion::identity();
   Transform transform(position, orientation);
   RigidBody *body = world->createRigidBody(transform);
+  body->setMass(0.1f);
   // body->setType(BodyType::STATIC);
 
   Collider *collider;
@@ -205,7 +209,7 @@ int main()
       1.0f, -1.0f, 1.0f};
 
   unsigned int lightVAO, lightVBO;
-
+  
   glGenVertexArrays(1, &lightVAO);
   glGenBuffers(1, &lightVBO);
 
@@ -259,6 +263,7 @@ int main()
     // player.body->setTransform(Ptransform);
 
     angle = 2.0f * acos(body->getTransform().getOrientation().w);
+    sofa.render(projection,model,view, lightPos, cameraPos);
 
     ourShader.use();
     model = glm::mat4(1.0f);
@@ -336,6 +341,8 @@ int main()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
                           (void *)0); // Position
     glEnableVertexAttribArray(0);
+
+    
 
     debugShader.use();
     glUniformMatrix4fv(glGetUniformLocation(debugShader.ID, "projection"), 1,
