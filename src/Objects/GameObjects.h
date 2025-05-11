@@ -1,17 +1,27 @@
 #include "../../src/Engine/Renderer/model.h"
 #include "../../src/Engine/Renderer/shader.h"
 #include "GRigidBody.h"
-#include <cstddef>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <reactphysics3d/engine/PhysicsCommon.h>
+#include <reactphysics3d/mathematics/Transform.h>
+#include <reactphysics3d/mathematics/Vector3.h>
+#include <string>
 #include <vector>
 
 using namespace std;
 
+struct Position {
+  float x = 0;
+  float y = 0;
+  float z = 0;
+};
+
 class GameObjects {
 private:
+  Position pos;
+
   vector<float> position;
   vector<float> rotation;
   vector<float> scale;
@@ -19,19 +29,20 @@ private:
   shader material = shader("../shaders/color.vert", "../shaders/color.frag");
 
 public:
-  Model mesh = Model("../resources/sofa/source/ready.obj");
-
+  Model mesh;
   GRigidBody rb = GRigidBody();
-  GameObjects(PhysicsWorld *world);
+  GameObjects(PhysicsWorld *world, const std::string &path);
   void render(glm::mat4 projection, glm::mat4 model, glm::mat4 view,
               glm::vec3 lightPos, glm::vec3 cameraPos);
   void addRigidBody();
-  void addConcaveCollider(Model mesh, PhysicsCommon physicsCommon);
+  void addConcaveCollider(PhysicsCommon &physicsCommon);
+  void updatePosition(float x, float y, float z);
 };
 
-GameObjects::GameObjects(PhysicsWorld *world) {
+GameObjects::GameObjects(PhysicsWorld *world, const std::string &path)
+    : mesh(path) {
   this->world = world;
-  position = {0.0f, 50.0f, -1.0f};
+  position = {pos.x, pos.y, pos.z};
   rotation = {0.0f, 0.0f, 0.0f};
   scale = {1.0f, 1.0f, 1.0f};
 }
@@ -78,4 +89,11 @@ void GameObjects::addRigidBody() {
   rb = GRigidBody(this->world, Vector3(position[0], position[1], position[2]));
 }
 
-void GameObjects::addConcaveCollider(Model mesh, PhysicsCommon physicsCommon) {}
+void GameObjects::addConcaveCollider(PhysicsCommon &physicsCommon) {
+  rb.addConcaveCollider(mesh, physicsCommon);
+}
+
+void GameObjects::updatePosition(float x, float y, float z) {
+  Transform transfrom = Transform(Vector3(x,y,z), rb.body->getTransform().getOrientation());
+  rb.body->setTransform(transfrom);
+}
