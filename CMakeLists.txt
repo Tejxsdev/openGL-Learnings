@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(openGL, VERSION 0.0.1)
+project(ForgeGL, VERSION 0.0.1)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 file(GLOB source_files CONFIGURE_DEPENDS
@@ -30,45 +30,45 @@ set(IMGUI_SRC
 )
 
 add_subdirectory(lib/tracy)
-add_executable(openGL src/main.cpp ${source_files} ${IMGUI_SRC} lib/tracy/public/TracyClient.cpp)
+add_executable(ForgeGL src/main.cpp ${source_files} ${IMGUI_SRC} lib/tracy/public/TracyClient.cpp)
 
 # GLFW
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory("lib/glfw-3.4")
-target_link_libraries(openGL glfw)
+target_link_libraries(ForgeGL glfw)
 find_package(OpenGL REQUIRED)
-target_link_libraries(openGL OpenGL::GL)
+target_link_libraries(ForgeGL OpenGL::GL)
 
 
 # GLAD
 add_subdirectory("lib/glad/")
-target_link_libraries(openGL glad)
+target_link_libraries(ForgeGL glad)
 
 
 # GLM
 add_subdirectory("lib/glm")
-target_link_libraries(openGL glm)
+target_link_libraries(ForgeGL glm)
 
 
 # STB_IMAGE
 add_subdirectory("lib/stb_image/")
-target_link_libraries(openGL stb_image)
+target_link_libraries(ForgeGL stb_image)
 
 
 # ASSIMP
 add_subdirectory("lib/assimp/")
-target_link_libraries(openGL assimp)
+target_link_libraries(ForgeGL assimp)
 
 # ReactPhyscis3d
 list(APPEND CMAKE_PREFIX_PATH "/usr/local/lib/cmake/ReactPhysics3D")
 find_package(ReactPhysics3D REQUIRED)
-target_link_libraries(openGL ReactPhysics3D::ReactPhysics3D)
+target_link_libraries(ForgeGL ReactPhysics3D::ReactPhysics3D)
 
 # Entt
 add_subdirectory(lib/entt)
-target_link_libraries(openGL EnTT::EnTT)
+target_link_libraries(ForgeGL EnTT::EnTT)
 
 add_subdirectory(lib/json)
-target_link_libraries(openGL nlohmann_json)
+target_link_libraries(ForgeGL nlohmann_json)
