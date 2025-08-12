@@ -3,11 +3,34 @@ project(openGL, VERSION 0.0.1)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 file(GLOB source_files CONFIGURE_DEPENDS
-"${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/Renderer/*.h"
-"${CMAKE_CURRENT_SOURCE_DIR}/src/Engine/Renderer/*.cpp"
-"${CMAKE_CURRENT_SOURCE_DIR}/src/Objects/*.h"
+"${CMAKE_CURRENT_SOURCE_DIR}/src/engine/renderer/*.h"
+"${CMAKE_CURRENT_SOURCE_DIR}/src/engine/renderer/*.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/src/engine/core/*.cpp"
+"${CMAKE_CURRENT_SOURCE_DIR}/src/engine/core/*.h"
+"${CMAKE_CURRENT_SOURCE_DIR}/src/components/*.h"
+"${CMAKE_CURRENT_SOURCE_DIR}/src//*.cpp"
 )
-add_executable(openGL src/main.cpp ${source_files})
+
+# Include directories
+include_directories(
+    lib/imgui
+    lib/imgui/backends
+    lib/tracy/public
+)
+
+# ImGui source files
+set(IMGUI_SRC
+    lib/imgui/imgui.cpp
+    lib/imgui/imgui_demo.cpp
+    lib/imgui/imgui_draw.cpp
+    lib/imgui/imgui_tables.cpp
+    lib/imgui/imgui_widgets.cpp
+    lib//imgui/backends/imgui_impl_glfw.cpp
+    lib/imgui/backends/imgui_impl_opengl3.cpp
+)
+
+add_subdirectory(lib/tracy)
+add_executable(openGL src/main.cpp ${source_files} ${IMGUI_SRC} lib/tracy/public/TracyClient.cpp)
 
 # GLFW
 set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
@@ -42,3 +65,10 @@ target_link_libraries(openGL assimp)
 list(APPEND CMAKE_PREFIX_PATH "/usr/local/lib/cmake/ReactPhysics3D")
 find_package(ReactPhysics3D REQUIRED)
 target_link_libraries(openGL ReactPhysics3D::ReactPhysics3D)
+
+# Entt
+add_subdirectory(lib/entt)
+target_link_libraries(openGL EnTT::EnTT)
+
+add_subdirectory(lib/json)
+target_link_libraries(openGL nlohmann_json)

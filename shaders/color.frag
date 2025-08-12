@@ -1,3 +1,4 @@
+
 #version 330 core
 out vec4 FragColor;
 
@@ -12,26 +13,35 @@ struct Light {
     vec3 specular;
 };
 
-uniform Light light;
+#define NUM_LIGHTS 2
+uniform Light lights[NUM_LIGHTS];
 uniform vec3 viewPos;
 uniform sampler2D texture_diffuse1;
 uniform sampler2D texture_specular1;
 
 void main()
-{    
-    vec3 ambient = light.ambient * texture(texture_diffuse1, TexCoords).rgb;
-
+{
     vec3 norm = normalize(Normal);
-    vec3 lightDir = normalize(light.position - FragPos);
-    float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = light.diffuse * diff * texture(texture_diffuse1, TexCoords).rgb; 
-
     vec3 viewDir = normalize(viewPos - FragPos);
-    vec3 reflectDir = reflect(-lightDir, norm);  
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
-    vec3 specular = light.specular * spec * texture(texture_specular1, TexCoords).rgb;  
+    vec3 result = vec3(0.0);
 
-    vec3 result = ambient + diffuse + specular;
+    for (int i = 0; i < NUM_LIGHTS; ++i) {
+        // Ambient
+        vec3 ambient = lights[i].ambient * texture(texture_diffuse1, TexCoords).rgb;
+
+        // Diffuse
+        vec3 lightDir = normalize(lights[i].position - FragPos);
+        float diff = max(dot(norm, lightDir), 0.0);
+        vec3 diffuse = lights[i].diffuse * diff * texture(texture_diffuse1, TexCoords).rgb;
+
+        // Specular
+        vec3 reflectDir = reflect(-lightDir, norm);  
+        float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+        vec3 specular = lights[i].specular * spec * texture(texture_specular1, TexCoords).rgb;
+
+        result += ambient + diffuse + specular;
+    }
 
     FragColor = vec4(result, 1.0f);
 }
+
