@@ -1,6 +1,6 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include "../../src/World.h"
+#include "../../src/engine/core/World.h"
 #include <glm/glm.hpp>
 #include "../../src/engine/renderer/Shader.h"
 #include "../../src/engine/core/RenderSystem.h"

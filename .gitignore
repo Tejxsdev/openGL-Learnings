@@ -2,4 +2,3 @@ build
 .vscode
 .cache
 imgui.ini
-vc140.pdb

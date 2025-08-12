@@ -16,12 +16,10 @@ void mouse_callback(GLFWwindow *window, double xpos, double ypos);
 
 int main()
 {
-  // Window creation
   Window *win = new Window(SCR_WIDTH, SCR_HEIGHT, "MyGame");
 
   Engine e;
 
-  World &world = e.getWorld();
   e.run(win->window, win->screenWidth, win->screenHeight);
 
   glEnable(GL_DEPTH_TEST);
