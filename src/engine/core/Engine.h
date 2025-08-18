@@ -1,3 +1,4 @@
+
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include "../../src/engine/core/World.h"
@@ -9,7 +10,7 @@
 #include "backends/imgui_impl_opengl3.h"
 #include "imgui.h"
 #include <nlohmann/json.hpp>
-#include <tracy/Tracy.hpp>
+#include "../../src/engine/editor/EditorLayer.h"
 
 using json = nlohmann::json;
 
@@ -19,6 +20,7 @@ private:
     World world;
     RenderSystem renderSystem;
     PhysicsSystem physicssystem;
+    EditorLayer editorLayer;
 
     static uint32_t objectCounter;
 
@@ -32,14 +34,46 @@ private:
     glm::mat4 projection;
     entt::entity selectedEntity = entt::null;
     bool isProjectLoaded = false;
+
+public:
+    unsigned int lightVAO, lightVBO;
+    float vertices[256] = {
+        -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f,
+        1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
+        1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f,
+        1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f,
+        1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f,
+        1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f,
+        1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f,
+        1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f,
+        1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f};
     GLuint fbo = 0;
     GLuint fboTexture = 0;
     GLuint rboDepth = 0;
     int framebufferWidth = 0;
     int framebufferHeight = 0;
 
-public:
     World &getWorld() { return world; };
+
+    glm::vec3 getCameraPos() { return cameraPos; };
+    glm::vec3 getCameraFront() { return cameraFront; };
+    glm::vec3 getCameraUp() { return cameraUp; };
+    glm::vec3 getLightPos() { return lightPos; };
+    glm::mat4 getModel() { return model; }
+    glm::mat4 getView() { return view; }
+    glm::mat4 getProjection() { return projection; };
+    void setObjectCounter(int objCounter) { objectCounter = objCounter; };
+    uint32_t getObjectCounter() { return objectCounter; };
+
+    PhysicsSystem &getPhysicsSystem() { return physicssystem; };
+    RenderSystem &getRenderSystem() { return renderSystem; };
+
+    Shader &getLightShader() { return lightShader; };
+
+    void EditorSetup(GLFWwindow *window);
+    void UpdateEditor(int SCR_WIDTH, int SCR_HEIGHT);
 
     void setup_imgui(GLFWwindow *window);
     void processInput(GLFWwindow *window);
@@ -47,5 +81,6 @@ public:
     void saveProject(const char *path);
     void newProject(const char *path);
     void SetupFramebuffer(int width, int height);
+    void cloneR(entt::registry& src, entt::registry& dst);
     void run(GLFWwindow *window, int SCR_WIDTH, int SCR_HEIGHT);
 };

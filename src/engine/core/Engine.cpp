@@ -175,29 +175,25 @@ void Engine::SetupFramebuffer(int width, int height)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void Engine::EditorSetup(GLFWwindow* window) {
+    editorLayer.Init(window,  this);
+}
+
+void Engine::UpdateEditor(int SCR_WIDTH, int SCR_HEIGHT) {
+    editorLayer.Update(SCR_WIDTH, SCR_HEIGHT);
+}
+
+void cloneR(entt::registry& src, entt::registry& dst) {
+}
+
+
 void Engine::run(GLFWwindow *window, int SCR_WIDTH, int SCR_HEIGHT)
 {
-    ZoneScoped;
-    setup_imgui(window);
+    EditorSetup(window);
     SetupFramebuffer(SCR_WIDTH, SCR_HEIGHT);
     physicssystem.setup(world.Registry(), false);
 
     // Lighting
-    float vertices[] = {
-        -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f,
-        1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f, -1.0f,
-        1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f,
-        1.0f, -1.0f, -1.0f, -1.0f, -1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f,
-        1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f,
-        1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f,
-        1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f, -1.0f,
-        1.0f, 1.0f, 1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f,
-        1.0f, 1.0f, -1.0f, 1.0f, 1.0f, 1.0f, -1.0f, 1.0f};
-
-    unsigned int lightVAO, lightVBO;
-
     glGenVertexArrays(1, &lightVAO);
     glGenBuffers(1, &lightVBO);
 
@@ -208,11 +204,9 @@ void Engine::run(GLFWwindow *window, int SCR_WIDTH, int SCR_HEIGHT)
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
                           (void *)0); // Position
     glEnableVertexAttribArray(0);
-    auto viewGroup = world.Registry().view<components::Transform>();
 
     while (!glfwWindowShouldClose(window))
     {
-        ZoneScoped;
         // Input
         processInput(window);
         static char projectPath[256] = "";
@@ -225,209 +219,7 @@ void Engine::run(GLFWwindow *window, int SCR_WIDTH, int SCR_HEIGHT)
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
-
-        ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-
-        const ImGuiViewport *viewport = ImGui::GetMainViewport();
-        ImGui::SetNextWindowPos(viewport->WorkPos);
-        ImGui::SetNextWindowSize(viewport->WorkSize);
-        ImGui::SetNextWindowViewport(viewport->ID);
-
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-
-        window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse |
-                        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-                        ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-
-        ImGui::Begin("DockSpace Demo", nullptr, window_flags);
-
-        ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-        ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
-        if (ImGui::BeginMainMenuBar())
-        {
-            if (ImGui::BeginMenu("File"))
-            {
-                if (ImGui::MenuItem("New"))
-                {
-                    world.Registry().clear();
-                    isProjectLoaded = false;
-                    selectedEntity = entt::null;
-                }
-                if (ImGui::MenuItem("Save"))
-                {
-                    if (isProjectLoaded)
-                    {
-                        saveProject(projectPath);
-                    }
-                }
-                if (ImGui::MenuItem("Open"))
-                {
-                    world.Registry().clear();
-                    selectedEntity = entt::null;
-                    isProjectLoaded = false;
-                }
-                if (ImGui::MenuItem("Exit"))
-                {
-                    glfwSetWindowShouldClose(window, true);
-                }
-                ImGui::EndMenu();
-            }
-            ImGui::EndMainMenuBar();
-        }
-        ImGui::End();
-        ImGui::PopStyleVar(2);
-
-        if (!isProjectLoaded)
-        {
-            ImGui::ShowDemoWindow();
-            ImGui::Begin("Menu");
-            ImGui::InputText("Saved Path", projectPath, sizeof(projectPath));
-
-            if (ImGui::Button("Open Saved"))
-            {
-                loadSaved(projectPath);
-            }
-
-            if (ImGui::Button("New"))
-            {
-                newProject(projectPath);
-            }
-        }
-        else
-        {
-
-            projection =
-                glm::perspective(glm::degrees(100.0f),
-                                 (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-            view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-            view = glm::rotate(view, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-            {
-            ZoneScopedN("PhysicsUpdate");
-            physicssystem.update(world.Registry());
-
-            }
-
-            {
-            ZoneScopedN("RenderScene");
-            renderSystem.update(world.Registry(), model, view, projection, lightPos, cameraPos);
-
-            }
-
-            // Lights
-            lightShader.use();
-            glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "projection"), 1,
-                               GL_FALSE, &projection[0][0]);
-            glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "view"), 1,
-                               GL_FALSE, &view[0][0]);
-            model = glm::mat4(1.0f);
-            model = glm::translate(model, lightPos);
-            model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-            model = glm::rotate(model, glm::radians(0.0f), glm::vec3(0, 1, 0));
-            glUniformMatrix4fv(glGetUniformLocation(lightShader.ID, "model"), 1,
-                               GL_FALSE, &model[0][0]);
-            glBindVertexArray(lightVAO);
-            glDrawArrays(GL_TRIANGLES, 0, sizeof(vertices));
-
-            ImGui::Begin("Viewport");
-            ImVec2 availSize = ImGui::GetContentRegionAvail();
-            ImGui::Image((void *)(intptr_t)fboTexture, availSize, ImVec2(0, 1), ImVec2(1, 0));
-            ImGui::End();
-
-            static char pathInput[256] = "";
-            ImGui::Begin("Scene");
-            for (auto entity : viewGroup)
-            {
-                if (ImGui::Button(world.getComponent<components::Name>(entity).name.c_str(), ImVec2(100, 20)))
-                {
-                    selectedEntity = entity;
-                    memset(pathInput, 0, sizeof(pathInput));
-                }
-            }
-            if (ImGui::Button("Create new gameobject"))
-            {
-                entt::entity newEntity = world.createEntity("GameObject " + to_string(objectCounter++));
-                world.addComponent<components::Transform>(newEntity);
-            }
-
-            ImGui::End();
-
-            ImGui::Begin("Inspector", &isProjectLoaded);
-            if (selectedEntity != entt::null)
-            {
-                auto &transform = world.Registry().get<components::Transform>(selectedEntity);
-                float pos[3] = {transform.position.x, transform.position.y, transform.position.z};
-                float rot[3] = {transform.rotation.x, transform.rotation.y, transform.rotation.z};
-                float scale[3] = {transform.scale.x, transform.scale.y, transform.scale.z};
-
-                static char objName[256];
-                std::strncpy(objName, world.getComponent<components::Name>(selectedEntity).name.c_str(), sizeof(world.getComponent<components::Name>(selectedEntity).name));
-                if (ImGui::InputText("#Name: ", objName, sizeof(objName)) && objName[0] != NULL)
-                {
-                    world.getComponent<components::Name>(selectedEntity).name = objName;
-                }
-
-                if (ImGui::CollapsingHeader("Transform"))
-                {
-                    if (ImGui::DragFloat3("Position ", pos))
-                    {
-                        transform.position = glm::vec3(pos[0], pos[1], pos[2]);
-                    }
-                    if (ImGui::DragFloat3("Rotation ", rot))
-                    {
-                        transform.rotation = glm::vec3(rot[0], rot[1], rot[2]);
-                    }
-                    if (ImGui::DragFloat3("Scale ", scale))
-                    {
-                        transform.scale = glm::vec3(scale[0], scale[1], scale[2]);
-                    }
-                }
-
-                if (world.Registry().all_of<components::MeshRenderer>(selectedEntity))
-                {
-                    if (ImGui::CollapsingHeader("Mesh Renderer"))
-                    {
-                        auto &mesh = world.Registry().get<components::MeshRenderer>(selectedEntity);
-                        ImGui::Text("Path: %s", mesh.model->dir.c_str());
-                    }
-                }
-                if (ImGui::Button("Add RigidBody Component"))
-                {
-                    if (!world.Registry().all_of<components::RigidBody>(selectedEntity))
-                    {
-                        world.addComponent<components::RigidBody>(selectedEntity);
-                        physicssystem.setup(world.Registry(), true);
-                    }
-                }
-                ImGui::InputText("Model Path", pathInput, sizeof(pathInput));
-
-                if (ImGui::Button("Add Mesh Component"))
-                {
-                    if (!world.Registry().all_of<components::MeshRenderer>(selectedEntity))
-                    {
-                        Model *model = new Model(pathInput);
-                        Shader *planeShader = new Shader("../shaders/color.vert", "../shaders/color.frag");
-                        world.addComponent<components::MeshRenderer>(selectedEntity, planeShader, model);
-                    }
-                }
-            }
-        }
-
-        ImGui::End();
-
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glViewport(0, 0, SCR_WIDTH, SCR_HEIGHT);
-        glDisable(GL_DEPTH_TEST);
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        ImGui::Render();
-        ImGui::UpdatePlatformWindows();
-        ImGui::RenderPlatformWindowsDefault();
-        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+        UpdateEditor(SCR_WIDTH, SCR_HEIGHT);
 
         glfwPollEvents();
         glfwSwapBuffers(window);
