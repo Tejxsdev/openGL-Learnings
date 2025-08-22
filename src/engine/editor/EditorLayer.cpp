@@ -170,7 +170,7 @@ void EditorLayer::renderViewport(int SCR_WIDTH, int SCR_HEIGHT)
                 world.Registry().emplace<components::MeshRenderer>(m_entity, mesh.shader, mesh.model);
             }
         }
-        physicssystem.setup(world.Registry(), true);
+        physicssystem.setup(world.Registry());
         temp.clear();
         isRunning = 0;
     }
@@ -240,17 +240,17 @@ void EditorLayer::renderInspector()
             if (ImGui::DragFloat3("Position ", pos))
             {
                 transform.position = glm::vec3(pos[0], pos[1], pos[2]);
-                physicssystem.setup(world.Registry(), true);
+                physicssystem.updateWorld(world.Registry());
             }
             if (ImGui::DragFloat3("Rotation ", rot))
             {
                 transform.rotation = glm::vec3(rot[0], rot[1], rot[2]);
-                physicssystem.setup(world.Registry(), true);
+                physicssystem.updateWorld(world.Registry());
             }
             if (ImGui::DragFloat3("Scale ", scale))
             {
                 transform.scale = glm::vec3(scale[0], scale[1], scale[2]);
-                physicssystem.setup(world.Registry(), true);
+                physicssystem.updateWorld(world.Registry());
             }
         }
 
@@ -267,7 +267,7 @@ void EditorLayer::renderInspector()
             if (!world.Registry().all_of<components::RigidBody>(selectedEntity))
             {
                 world.addComponent<components::RigidBody>(selectedEntity);
-                physicssystem.setup(world.Registry(), true);
+                physicssystem.updateWorld(world.Registry());
             }
         }
         ImGui::InputText("Model Path", pathInput, sizeof(pathInput));

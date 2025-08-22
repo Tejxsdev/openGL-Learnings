@@ -2,10 +2,13 @@
 #include <../../src/components/Transform.h>
 #include <../../src/components/Name.h>
 #include <../../src/components/Camera.h>
+#include <../../src/components/Tag.h>
+#include <vector>
 
 class World
 {
 private:
+    std::vector<std::string> listOfTags;
     entt::registry registry;
 public:
     entt::registry& Registry() {return registry; }
@@ -28,5 +31,9 @@ public:
             }
         }
         return entt::null;
+    }
+    void addTag(entt::entity entity, string tag) {
+        addComponent<components::Tag>(entity, tag);
+        listOfTags.push_back(tag);
     }
 };

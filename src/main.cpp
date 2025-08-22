@@ -19,10 +19,7 @@ int main()
   Window *win = new Window(SCR_WIDTH, SCR_HEIGHT, "MyGame");
 
   Engine e;
-
   e.run(win->window, win->screenWidth, win->screenHeight);
-
-  glEnable(GL_DEPTH_TEST);
 
   win->terminateWindow();
   return 0;

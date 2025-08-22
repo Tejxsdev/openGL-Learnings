@@ -80,7 +80,7 @@ void Engine::loadSaved(const char *path)
             if (obj.contains("rigidbody") && obj["rigidbody"]["rb"] == true)
             {
                 world.addComponent<components::RigidBody>(entity);
-                physicssystem.setup(world.Registry(), true);
+                physicssystem.setup(world.Registry());
             }
         }
         isProjectLoaded = true;
@@ -207,7 +207,7 @@ void Engine::run(GLFWwindow *window, int SCR_WIDTH, int SCR_HEIGHT)
 {
     EditorSetup(window);
     SetupFramebuffer(SCR_WIDTH, SCR_HEIGHT);
-    physicssystem.setup(world.Registry(), false);
+    physicssystem.setup(world.Registry());
 
     // Lighting
     glGenVertexArrays(1, &lightVAO);
