@@ -46,7 +46,7 @@ void EditorLayer::renderMenu()
 {
     ImGui::Begin("Menu");
     ImGui::InputText("Saved Path", projectPath, sizeof(projectPath));
-    World &world = m_Engine->getWorld(); 
+    World &world = m_Engine->getWorld();
 
     if (ImGui::Button("Open Saved"))
     {
@@ -227,6 +227,14 @@ void EditorLayer::renderInspector()
         float pos[3] = {transform.position.x, transform.position.y, transform.position.z};
         float rot[3] = {transform.rotation.x, transform.rotation.y, transform.rotation.z};
         float scale[3] = {transform.scale.x, transform.scale.y, transform.scale.z};
+
+        static char objTag[256];
+        std::strncpy(objTag, world.getComponent<components::Tag>(selectedEntity).Tag.c_str(), sizeof(world.getComponent<components::Tag>(selectedEntity).Tag));
+        if (ImGui::InputText("#Tag: ", objTag, sizeof(objTag)) && objTag[0] != NULL)
+        {
+            world.addTag(selectedEntity, objTag);
+        }
+
 
         static char objName[256];
         std::strncpy(objName, world.getComponent<components::Name>(selectedEntity).name.c_str(), sizeof(world.getComponent<components::Name>(selectedEntity).name));

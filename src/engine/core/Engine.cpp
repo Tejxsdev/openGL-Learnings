@@ -58,6 +58,8 @@ void Engine::loadSaved(const char *path)
 
             world.addComponent<components::Transform>(entity, pos, rot, scale);
 
+            world.getComponent<components::Tag>(entity).Tag = obj["Tag"];
+
             if (obj.contains("meshRenderer"))
             {
                 string modelPath = obj["meshRenderer"]["model_path"];
@@ -99,6 +101,9 @@ void Engine::saveProject(const char *path)
 
         auto &n = registry.get<components::Name>(entity);
         obj["name"] = n.name;
+
+        auto &tag = registry.get<components::Tag>(entity);
+        obj["Tag"] = tag.Tag;
 
         // Transform Component
         auto &t = registry.get<components::Transform>(entity);

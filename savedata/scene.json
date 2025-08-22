@@ -1,51 +1,23 @@
 [
     {
-        "id": 1048580,
-        "meshRenderer": {
-            "frag_shader_path": "../shaders/color.frag",
-            "model_path": "../resources/backpack/backpack.obj",
-            "vert_shader_path": "../shaders/color.vert"
-        },
-        "name": "Backpack",
-        "transform": {
-            "position": [
-                0.0,
-                7.0,
-                -9.0
-            ],
-            "rotation": [
-                1.0,
-                1.0,
-                1.0
-            ],
-            "scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        }
-    },
-    {
-        "id": 1048579,
+        "Tag": "none",
+        "id": 9437186,
         "meshRenderer": {
             "frag_shader_path": "../shaders/color.frag",
             "model_path": "../resources/Egg/egg.obj",
             "vert_shader_path": "../shaders/color.vert"
         },
         "name": "Egg",
-        "rigidbody": {
-            "rb": false
-        },
         "transform": {
             "position": [
-                -10.0,
-                9.0,
+                0.0,
+                0.0,
                 0.0
             ],
             "rotation": [
-                1.0,
-                1.0,
-                1.0
+                0.0,
+                0.0,
+                0.0
             ],
             "scale": [
                 1.0,
@@ -55,39 +27,24 @@
         }
     },
     {
-        "id": 1048578,
-        "name": " GameObject 2",
+        "Tag": "bagObj",
+        "id": 9437185,
+        "meshRenderer": {
+            "frag_shader_path": "../shaders/color.frag",
+            "model_path": "../resources/backpack/backpack.obj",
+            "vert_shader_path": "../shaders/color.vert"
+        },
+        "name": "BackPack",
         "transform": {
             "position": [
-                1.0,
-                1.0,
-                1.0
+                0.0,
+                6.0,
+                0.0
             ],
             "rotation": [
-                1.0,
-                1.0,
-                1.0
-            ],
-            "scale": [
-                1.0,
-                1.0,
-                1.0
-            ]
-        }
-    },
-    {
-        "id": 1048577,
-        "name": "Game",
-        "transform": {
-            "position": [
-                1.0,
-                14.0,
-                1.0
-            ],
-            "rotation": [
-                1.0,
-                1.0,
-                1.0
+                0.0,
+                0.0,
+                0.0
             ],
             "scale": [
                 1.0,
@@ -111,11 +68,12 @@
                 0.0
             ]
         },
-        "id": 1048576,
+        "Tag": "Camera",
+        "id": 9437184,
         "name": "Camera",
         "transform": {
             "position": [
-                1.0,
+                0.0,
                 -7.0,
                 25.0
             ],

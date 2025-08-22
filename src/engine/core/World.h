@@ -8,7 +8,7 @@
 class World
 {
 private:
-    std::vector<std::string> listOfTags;
+    std::vector<std::string> listOfTags = {"none"};
     entt::registry registry;
 public:
     entt::registry& Registry() {return registry; }
@@ -33,7 +33,6 @@ public:
         return entt::null;
     }
     void addTag(entt::entity entity, string tag) {
-        addComponent<components::Tag>(entity, tag);
-        listOfTags.push_back(tag);
+        getComponent<components::Tag>(entity).Tag = tag;
     }
 };

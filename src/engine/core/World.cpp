@@ -3,5 +3,6 @@
 entt::entity World::createEntity(string name) {
     entt::entity entity = registry.create();
     addComponent<components::Name>(entity, name);
+    addComponent<components::Tag>(entity, "none");
     return entity;
 }
