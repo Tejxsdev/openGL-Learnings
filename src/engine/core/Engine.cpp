@@ -71,6 +71,12 @@ void Engine::loadSaved(const char *path)
                 world.addComponent<components::MeshRenderer>(entity, mShader, model);
             }
 
+            if (obj.contains("Camera")) {
+                glm::vec4 camF = {obj["Camera"]["CamersFront"][0], obj["Camera"]["CamersFront"][1], obj["Camera"]["CamersFront"][2], obj["Camera"]["CamersFront"][3]};
+                glm::vec4 CamUp = {obj["Camera"]["CamersUp"][0], obj["Camera"]["CamersUp"][1], obj["Camera"]["CamersUp"][2], obj["Camera"]["CamersUp"][3]};
+                world.addComponent<components::Camera>(entity, camF, CamUp);
+            }
+
             if (obj.contains("rigidbody") && obj["rigidbody"]["rb"] == true)
             {
                 world.addComponent<components::RigidBody>(entity);
@@ -111,6 +117,16 @@ void Engine::saveProject(const char *path)
                 {"vert_shader_path", mesh.shader->vertShaderSourcePath},
             };
         }
+
+        // Camera Component
+        if (world.Registry().all_of<components::Camera>(entity))
+        {
+            auto &cam = registry.get<components::Camera>(entity);
+            obj["Camera"] = {
+                {"CamersFront", {cam.CamersFront.x, cam.CamersFront.y, cam.CamersFront.z, cam.CamersFront.w}},
+                {"CamersUp", {cam.CamersUp.x, cam.CamersUp.y, cam.CamersUp.z, cam.CamersUp.w}},
+            };
+        }        
 
         // RigidBody Component
         if (world.Registry().all_of<components::RigidBody>(entity))

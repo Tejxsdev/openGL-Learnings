@@ -59,7 +59,10 @@ public:
 
     glm::vec3 getCameraPos() { return cameraPos; };
     glm::vec3 getCameraFront() { return cameraFront; };
+    void setCameraFront(glm::vec3 camFront) { cameraFront = camFront; };
     glm::vec3 getCameraUp() { return cameraUp; };
+    void setCameraUp(glm::vec3 camUp) { cameraUp = camUp; };
+
     glm::vec3 getLightPos() { return lightPos; };
     glm::mat4 getModel() { return model; }
     glm::mat4 getView() { return view; }

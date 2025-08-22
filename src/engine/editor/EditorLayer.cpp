@@ -46,16 +46,30 @@ void EditorLayer::renderMenu()
 {
     ImGui::Begin("Menu");
     ImGui::InputText("Saved Path", projectPath, sizeof(projectPath));
+    World &world = m_Engine->getWorld(); 
 
     if (ImGui::Button("Open Saved"))
     {
+        auto viewgroup = world.Registry().view<entt::entity>();
+        for (auto entity : viewgroup)
+        {
+            world.Registry().destroy(entity);
+        }
         m_Engine->loadSaved(projectPath);
+        if (world.findGameObjectsWithName("Camera") == entt::null)
+        {
+            int c = m_Engine->getObjectCounter();
+            entt::entity newEntity = world.createEntity("Camera");
+            m_Engine->setObjectCounter(c);
+            world.addComponent<components::Transform>(newEntity);
+            world.addComponent<components::Camera>(newEntity);
+        }
         state = EditorState::Project;
     }
 
     if (ImGui::Button("New"))
     {
-        m_Engine->newProject(projectPath);
+        state = EditorState::Menu;
     }
     ImGui::End();
 }
@@ -78,25 +92,18 @@ void EditorLayer::renderViewport(int SCR_WIDTH, int SCR_HEIGHT)
     projection =
         glm::perspective(glm::degrees(100.0f),
                          (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-    auto viewGroup = world.Registry().view<components::Name>();
+    glm::mat4 rotation =
+        glm::rotate(glm::mat4(1.0f), glm::radians(world.getComponent<components::Transform>(world.findGameObjectsWithName("Camera")).rotation.x), glm::vec3(0, 0, 1)) *
+        glm::rotate(glm::mat4(1.0f), glm::radians(world.getComponent<components::Transform>(world.findGameObjectsWithName("Camera")).rotation.y), glm::vec3(0, 1, 0)) *
+        glm::rotate(glm::mat4(1.0f), glm::radians(world.getComponent<components::Transform>(world.findGameObjectsWithName("Camera")).rotation.z), glm::vec3(1, 0, 0));
 
     if (isRunning == 1)
     {
-        entt::entity camENT;
-        for (auto entity : viewGroup)
-        {
-            if (world.getComponent<components::Name>(entity).name == "Camera")
-            {
-                camENT = entity;
-            }
-        }
+        entt::entity camENT = m_Engine->getWorld().findGameObjectsWithName("Camera");
         cameraPos = world.getComponent<components::Transform>(camENT).position;
-    }
+        cameraFront = glm::normalize(glm::vec3(rotation * world.getComponent<components::Camera>(camENT).CamersFront));
+        cameraUp = glm::normalize(glm::vec3(rotation * world.getComponent<components::Camera>(camENT).CamersUp));
 
-    view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
-    view = glm::rotate(view, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    if (isRunning == 1)
-    {
         auto viewGroup = world.Registry().view<entt::entity>();
 
         if (takeBackUp)
@@ -109,6 +116,17 @@ void EditorLayer::renderViewport(int SCR_WIDTH, int SCR_HEIGHT)
 
                 auto &t = world.Registry().get<components::Transform>(entity);
                 temp.emplace<components::Transform>(t_entity, t);
+
+                if (world.Registry().all_of<components::Camera>(entity))
+                {
+                    auto &cam = world.Registry().get<components::Camera>(entity);
+                    temp.emplace<components::Camera>(t_entity, cam.CamersFront, cam.CamersUp);
+                }
+
+                if (world.Registry().all_of<components::RigidBody>(entity))
+                {
+                    temp.emplace<components::RigidBody>(t_entity);
+                }
 
                 if (world.Registry().all_of<components::MeshRenderer>(entity))
                 {
@@ -135,15 +153,29 @@ void EditorLayer::renderViewport(int SCR_WIDTH, int SCR_HEIGHT)
             auto &t = temp.get<components::Transform>(entity);
             world.Registry().emplace<components::Transform>(m_entity, t);
 
+            if (temp.all_of<components::Camera>(entity))
+            {
+                auto &cam = temp.get<components::Camera>(entity);
+                world.Registry().emplace<components::Camera>(m_entity, cam.CamersFront, cam.CamersUp);
+            }
+
+            if (temp.all_of<components::RigidBody>(entity))
+            {
+                world.Registry().emplace<components::RigidBody>(m_entity);
+            }
+
             if (temp.all_of<components::MeshRenderer>(entity))
             {
                 auto &mesh = temp.get<components::MeshRenderer>(entity);
                 world.Registry().emplace<components::MeshRenderer>(m_entity, mesh.shader, mesh.model);
             }
         }
+        physicssystem.setup(world.Registry(), true);
         temp.clear();
         isRunning = 0;
     }
+    view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+    view = glm::rotate(view, glm::radians(180.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
     renderSystem.update(world.Registry(), model, view, projection, lightPos, cameraPos);
 
@@ -208,14 +240,17 @@ void EditorLayer::renderInspector()
             if (ImGui::DragFloat3("Position ", pos))
             {
                 transform.position = glm::vec3(pos[0], pos[1], pos[2]);
+                physicssystem.setup(world.Registry(), true);
             }
             if (ImGui::DragFloat3("Rotation ", rot))
             {
                 transform.rotation = glm::vec3(rot[0], rot[1], rot[2]);
+                physicssystem.setup(world.Registry(), true);
             }
             if (ImGui::DragFloat3("Scale ", scale))
             {
                 transform.scale = glm::vec3(scale[0], scale[1], scale[2]);
+                physicssystem.setup(world.Registry(), true);
             }
         }
 
@@ -271,15 +306,6 @@ void EditorLayer::renderHeiarchy()
         m_Engine->setObjectCounter(c);
         world.addComponent<components::Transform>(newEntity);
     }
-
-    if (ImGui::Button("Create Camera"))
-    {
-        int c = m_Engine->getObjectCounter();
-        entt::entity newEntity = world.createEntity("Camera");
-        m_Engine->setObjectCounter(c);
-        world.addComponent<components::Transform>(newEntity);
-    }
-
     ImGui::End();
 }
 void EditorLayer::renderMenuBar()

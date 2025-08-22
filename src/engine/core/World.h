@@ -1,6 +1,7 @@
 #include <entt/entt.hpp>
 #include <../../src/components/Transform.h>
 #include <../../src/components/Name.h>
+#include <../../src/components/Camera.h>
 
 class World
 {
@@ -16,5 +17,16 @@ public:
     template<typename T>
     T& getComponent(entt::entity entity) {
         return registry.get<T>(entity);
+    }
+    entt::entity findGameObjectsWithName(string s) {
+        auto viewGroup = registry.view<components::Name>();
+        for (auto entity : viewGroup)
+        {
+            if (getComponent<components::Name>(entity).name == s)
+            {
+                return entity;
+            }
+        }
+        return entt::null;
     }
 };
