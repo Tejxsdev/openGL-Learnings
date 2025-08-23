@@ -203,6 +203,7 @@ void EditorLayer::renderViewport(int SCR_WIDTH, int SCR_HEIGHT)
             isRunning = 1;
             takeBackUp = true;
         }
+        ImGui::SameLine();
         if (ImGui::Button("Stop") && isRunning == 1)
         {
             isRunning = -1;
@@ -230,7 +231,9 @@ void EditorLayer::renderInspector()
 
         static char objTag[256];
         std::strncpy(objTag, world.getComponent<components::Tag>(selectedEntity).Tag.c_str(), sizeof(world.getComponent<components::Tag>(selectedEntity).Tag));
-        if (ImGui::InputText("#Tag: ", objTag, sizeof(objTag)) && objTag[0] != NULL)
+        ImGui::Text("Tag: ");
+        ImGui::SameLine();
+        if (ImGui::InputText("##input", objTag, sizeof(objTag)) && objTag[0] != NULL)
         {
             world.addTag(selectedEntity, objTag);
         }
@@ -238,7 +241,9 @@ void EditorLayer::renderInspector()
 
         static char objName[256];
         std::strncpy(objName, world.getComponent<components::Name>(selectedEntity).name.c_str(), sizeof(world.getComponent<components::Name>(selectedEntity).name));
-        if (ImGui::InputText("#Name: ", objName, sizeof(objName)) && objName[0] != NULL)
+        ImGui::Text("Name: ");
+        ImGui::SameLine();
+        if (ImGui::InputText("##input", objName, sizeof(objName)) && objName[0] != NULL)
         {
             world.getComponent<components::Name>(selectedEntity).name = objName;
         }
